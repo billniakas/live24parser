@@ -12,11 +12,13 @@
 #
 #
 echo "Live24 Parser"
+echo "--------------------------------------------------------------------"
 echo "Ένα script για κατέβασμα των links από το live24.gr για να ακούτε"
 echo "τους αγαπημένους σας σταθμούς, όχι απαραιτήτα μέσω browser"
 echo "--------------------------------------------------------------------"
 echo "H διαδικασία ανάλογως την ταχύτητα της σύνδεσης σας, ενδέχεται να"
 echo "διαρκέσει μερικά λεπτα. Περιμένετε την ολοκλήρωση της"
+echo "--------------------------------------------------------------------"
 sleep 5
 wget -q -O- http://live24.gr | grep -oP '<a[^<]*class="name"[^<]*href="\K[^"]+' | sed 's/^/http:\/\/live24.gr/' > live24_stations.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
@@ -25,7 +27,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     station_name=$(wget -q -O- $line | grep -oP "radioStationName: '\K[^']+" | head -n1 | sed 's/powered by LIVE24//g' | cut -d "-" -f1)
     station_url=$(wget -q -O- $line | grep -oP "streamsrc: '\K[^']+")
     echo "$station_name  $station_url >> greek_stations.txt"
-    echo "$station_name  $station_url" >> greek_stations.txt
+    echo "$station_name, $station_url" >> greek_stations.txt
 
 done < "live24_stations.txt"
 echo "Η λίστα ολοκληρώθηκε και βρίσκεται στο greek_stations.txt"
