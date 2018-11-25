@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #
-# live24parser - ακούστε online ραδιόφωνο από το τερματικό
+# live24parser
 # Copyright (c)2018 Vasilis Niakas and Contributors
 #
 # This program is free software; you can redistribute it and/or modify
