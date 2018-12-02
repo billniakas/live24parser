@@ -15,10 +15,10 @@ function YN_Q {
 	while true; do
 		read -rp "$1" yes_no
 		case "$yes_no" in
-			y|yes|Y|Yes|YES )
+			y|yes|Y|Yes|YES|ν|ναι|Ν|Ναι|ΝΑΙ )
 				return 0;
 				break;;
-			n|no|N|No|NO )
+			n|no|N|No|NO|ο|όχι|Ο|Όχι|ΟΧΙ )
 				return 1;
 				break;;
 			* )
