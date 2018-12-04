@@ -30,19 +30,23 @@ function YN_Q {
 if [[ "$#" == "0" ]];
 then
     echo "Δε δόθηκε παράμετρος"
-    text="Δημιουργία λίστας με τους σταθμούς της αρχικής σελίδας του live24.gr"
-    var=" "
-    
+    echo "Τρέξτε το script με την παράμετρο --help"
+    exit 0
+     
 else
     if [[ $1 == "--help" ]];
 	then
-	echo "----------------------------------------------"
-	echo "--help          : Aυτό το κείμενο"
-	#echo "--m3u  	      : create a M3U playlist file"
-        #echo "--pls  	      : create a PLS playlist file"
-	echo "----------------------------------------------"
+	echo "----------------------------------------------------------"
+	echo "Χρήση ./live24parser.sh --[ΠΕΡΙΟΧΗ] --[ΤΥΠΟΣ ΛΙΣΤΑΣ]"
+	echo "----------------------------------------------------------"
+	echo "--help          : Aυτό το κείμενο           "
+	echo "--m3u           : Δημιουργία M3U λίστας"
+        echo "--pls           : Δημιουργία PLS λίστας"
+        echo "--txt           : Δημιουργία TXT λίστας"
+	echo "----------------------------------------------------------"
 	echo "Δημιουργία λίστας ανά περιοχή                 "
-	echo "----------------------------------------------"
+	echo "----------------------------------------------------------"
+	echo "--homepage      : Λίστα με τους σταθμούς της αρχικής σελίδας του live24.gr"
 	echo "--athens        : Λίστα με σταθμούς της Αθήνας"
 	echo "--thessaloniki  : Λίστα με σταθμούς της Θεσσαλονίκης"
 	echo "--peloponisos   : Λίστα με σταθμούς της Πελλοπονήσου"
@@ -57,6 +61,10 @@ else
 	echo "--webradios     : Λίστα με Web Radios"
 	
 	exit 0
+	elif [[ $1 == "--homepage" ]];then
+		filename="_live24"
+    		text="Δημιουργία λίστας με τους σταθμούς της αρχικής σελίδας του live24.gr"
+		var=""                  # Αρχικής σελίδας του live24.gr
 	elif [[ $1 == "--athens" ]];then
 		filename="_athens"
 		text="Δημιουργία λίστας με σταθμούς της Αθήνας"
@@ -122,6 +130,31 @@ else
 	echo "Δόθηκε λανθασμένη παράμετρος"
 	exit 0
     fi
+    if [[ $2 == "" ]] || [[ $2 == "--txt" ]];
+		then
+		text_list="Δημιουργία TXT λίστας"
+		list=""
+		delimiter=", "
+		list_type="TXT"
+    
+
+    elif [[ $2 == "--m3u" ]];
+		then
+		text_list="Δημιουργία M3U λίστας"
+		list="#EXTINF:0,"
+		delimiter=$'\n'
+		list_type="M3U"
+    
+    elif [[ $2 == "--pls" ]];
+		then
+		text_list="Δημιουργία PLS λίστας"
+		list='Title'
+		delimiter=$'\nFile'
+		list_type="PLS"
+	else
+	echo "Δόθηκε λανθασμένη παράμετρος"
+	exit 0
+    fi
 fi
 clear
 echo "--------------------------------------------------------------------"
@@ -137,6 +170,8 @@ echo "Τρέξτε το script με την παράμετρο --help για πε
 echo "--------------------------------------------------------------------"
 if YN_Q "Θέλετε να συνεχίσετε (y/n); " "μη έγκυρος χαρακτήρας" ; then
 	echo $text
+	echo $text_list
+	echo
 else
 	echo "Έξοδος..."
 	exit 0
@@ -145,15 +180,23 @@ fi
 sleep 1
 
 wget -q -O- http://live24.gr$var | grep -oP '<a[^<]*class="name"[^<]*href="\K[^"]+' | sed 's/^/http:\/\/live24.gr/' > live24_stations.txt
+num=0
 while IFS='' read -r line || [[ -n "$line" ]]; do
     num=$(( $num + 1 ))
-    #echo $line
+    #echo $num
     station_name=$(wget -q -O- $line | grep -oP "radioStationName: '\K[^']+" | head -n1 | sed 's/powered by LIVE24//g' | cut -d "-" -f1)
     station_url=$(wget -q -O- $line | grep -oP "streamsrc: '\K[^']+")
-    echo "$station_name  $station_url >> greek_stations"$filename".txt"
-    echo "$station_name, $station_url" >> greek_stations"$filename".txt
+    if [[ $2 == "--pls" ]];
+	then
+            echo "$station_name  $station_url >> greek_stations$filename.$list_type"
+	    echo $list$num'='$station_name"$delimiter"$num'='$station_url >> "greek_stations$filename".$list_type
+	
+	else
+	    echo "$station_name  $station_url >> greek_stations$filename.$list_type"
+	    echo $list$station_name"$delimiter"$station_url >> "greek_stations$filename".$list_type
+    fi
 
 done < "live24_stations.txt"
-echo "Η λίστα ολοκληρώθηκε και βρίσκεται στο greek_stations"$filename".txt"
+echo "Η λίστα ολοκληρώθηκε και βρίσκεται στο greek_stations$filename".$list_type
 rm live24_stations.txt
 exit 0
